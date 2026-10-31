@@ -1,0 +1,38 @@
+[
+  {
+    "q": "The payment portal failed. Can I pay on the next working day?",
+    "expect_title": "Payment Portal Failure"
+  },
+  {
+    "q": "What counts as a working day?",
+    "expect_title": "Working Day Definition"
+  },
+  {
+    "q": "How do I apply for a scholarship?",
+    "expect_title": "Scholarship Application Procedure"
+  },
+  {
+    "q": "Who has to approve a course change request?",
+    "expect_title": "Course Change Requests"
+  },
+  {
+    "q": "What is the late fee if I pay after the due date?",
+    "expect_title": "Late Payment Procedure"
+  },
+  {
+    "q": "How long does the support team take to reply to a ticket?",
+    "expect_title": "Support Tickets"
+  },
+  {
+    "q": "My ticket was not answered, who do I escalate to?",
+    "expect_title": "Escalation Procedure"
+  },
+  {
+    "q": "What is the hostel refund rule?",
+    "expect_title": "Items Requiring Confirmation From the Institution"
+  },
+  {
+    "q": "quantum chromodynamics banana farming",
+    "expect_title": null
+  }
+]

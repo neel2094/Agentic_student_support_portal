@@ -1,0 +1,10 @@
+question,expected,passed,chunk_ids,titles,scores,latency_ms
+The payment portal failed. Can I pay on the next working day?,Payment Portal Failure,True,c3|c4|c16,Payment Portal Failure | Working Day Definition | Library Access and Book Borrowing Rules,6.45|4.82|3.71,0.19
+What counts as a working day?,Working Day Definition,True,c4|c16|c3,Working Day Definition | Library Access and Book Borrowing Rules | Payment Portal Failure,4.82|3.2|2.87,0.09
+How do I apply for a scholarship?,Scholarship Application Procedure,True,c6|c5|c21,Scholarship Application Procedure | Scholarship Eligibility | Official Certificates and Transcripts,3.12|2.45|2.44,0.04
+Who has to approve a course change request?,Course Change Requests,True,c7|c14|c8,Course Change Requests | Exam Re-Evaluation and Grade Review Procedure | Support Tickets,8.05|5.04|3.3,0.11
+What is the late fee if I pay after the due date?,Late Payment Procedure,True,c2|c1|c8,Late Payment Procedure | Fee Payment Deadlines | Support Tickets,12.71|7.08|4.15,0.1
+How long does the support team take to reply to a ticket?,Support Tickets,True,c8|c3|c9,Support Tickets | Payment Portal Failure | Escalation Procedure,6.78|4.6|2.97,0.13
+"My ticket was not answered, who do I escalate to?",Escalation Procedure,True,c9|c4|c3,Escalation Procedure | Working Day Definition | Payment Portal Failure,9.04|3.02|2.99,0.09
+What is the hostel refund rule?,Items Requiring Confirmation From the Institution,True,c10|c15|c18,Items Requiring Confirmation From the Institution | Hostel Regulations and Curfew Guidelines | Internship and Placement Eligibility Criteria,9.98|2.5|2.11,0.06
+quantum chromodynamics banana farming,(nothing relevant),True,,,,0.07

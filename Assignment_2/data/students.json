@@ -1,0 +1,62 @@
+[
+  {
+    "student_id": "S101",
+    "name": "Aarav Patel",
+    "fee_total": 100000,
+    "fee_paid": 100000,
+    "due_date": "2026-11-15",
+    "scholarship_status": "approved",
+    "scholarship_detail": "Merit Scholarship - 25% Tuition Fee Waiver",
+    "password": "aarav@123",
+    "email": "aarav.patel@student.northstar.edu",
+    "phone": "9825010101"
+  },
+  {
+    "student_id": "S102",
+    "name": "Priyansh Shah",
+    "fee_total": 100000,
+    "fee_paid": 60000,
+    "due_date": "2026-11-15",
+    "scholarship_status": "pending",
+    "scholarship_detail": "Need-Based Scholarship Application Under Review",
+    "password": "priyansh@123",
+    "email": "priyansh.shah@student.northstar.edu",
+    "phone": "9825010102"
+  },
+  {
+    "student_id": "S103",
+    "name": "Neel Patel",
+    "fee_total": 100000,
+    "fee_paid": 0,
+    "due_date": "2026-10-31",
+    "scholarship_status": "none",
+    "scholarship_detail": "No Scholarship Application Found",
+    "password": "neel@123",
+    "email": "neel.patel@student.northstar.edu",
+    "phone": "9825010103"
+  },
+  {
+    "student_id": "S104",
+    "name": "Riya Mehta",
+    "fee_total": 100000,
+    "fee_paid": 85000,
+    "due_date": "2026-11-15",
+    "scholarship_status": "approved",
+    "scholarship_detail": "Academic Excellence Scholarship - 15% Tuition Fee Waiver",
+    "password": "riya@123",
+    "email": "riya.mehta@student.northstar.edu",
+    "phone": "9825010104"
+  },
+  {
+    "student_id": "S105",
+    "name": "Yash Desai",
+    "fee_total": 100000,
+    "fee_paid": 30000,
+    "due_date": "2026-11-15",
+    "scholarship_status": "pending",
+    "scholarship_detail": "Sports Scholarship Application Under Review",
+    "password": "yash@123",
+    "email": "yash.desai@student.northstar.edu",
+    "phone": "9825010105"
+  }
+]

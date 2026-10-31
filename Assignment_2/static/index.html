@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Northstar University | Student Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <script src="vendor/marked.min.js"></script>
+    <link rel="stylesheet" href="style.css?v=20">
+</head>
+
+<body>
+    <main id="loginView" class="login d-none">
+        <section class="login-art">
+            <div class="crest">NU</div>
+            <p class="eyebrow">NORTHSTAR UNIVERSITY</p>
+            <h1>Knowledge begins with the right question.</h1>
+            <p class="lead">Student services, academic policies and personal support in one secure workspace.</p>
+            <div class="art-grid">
+                <div><b>24/7</b><span>Student guidance</span></div>
+                <div><b>Secure</b><span>Private records</span></div>
+                <div><b>Fast</b><span>Verified answers</span></div>
+            </div>
+            <div class="orb one"></div>
+            <div class="orb two"></div>
+        </section>
+        <section class="login-panel">
+            <div class="login-box">
+                <div class="mobile-brand"><span class="mini-crest">NU</span><b>Northstar University</b></div><span
+                    class="kicker">STUDENT PORTAL</span>
+                <h2>Welcome back</h2>
+                <p>Sign in to continue to Student Hub.</p>
+                <form id="loginForm"><label>Student ID<input id="sid" autocomplete="username" placeholder="e.g. S101"
+                            required></label><label>Password<input id="pw" type="password"
+                            autocomplete="current-password" placeholder="Enter password" required></label>
+                    <p id="loginErr" class="error"></p><button class="primary">Sign in <span>→</span></button>
+                </form>
+                <div class="demo-title">Demo accounts</div>
+
+                <div id="demoContainer" class="demo-list">
+                </div>
+
+                <div class="demo-pagination">
+                    <button type="button" id="prevStudents" class="demo-nav-btn">← Previous</button>
+                    <button type="button" id="nextStudents" class="demo-nav-btn">Next →</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <div id="appView" class="app d-none">
+        <aside id="sidebar" class="rail">
+            <div class="brand"><span class="crest small">NU</span>
+                <div><b>Northstar</b><small>University</small></div>
+            </div><button id="collapse" class="collapse" title="Collapse navigation">‹</button>
+            <nav><button class="nav active" data-view="assistant"><span>✦</span><b>Assistant</b></button><button
+                    class="nav" data-view="services"><span>⌘</span><b>Services</b></button><button class="nav"
+                    data-view="support"><span>?</span><b>Support</b></button></nav>
+            <div class="rail-bottom"><a href="/evaluator" target="_blank"
+                    class="nav evaluator"><span>◫</span><b>Evaluator</b></a><button id="logout"
+                    class="nav"><span>↗</span><b>Sign out</b></button></div>
+        </aside>
+        <div id="overlay" class="overlay"></div>
+        <main class="workspace">
+            <header><button id="menu" class="menu">☰</button>
+                <div>
+                    <p id="viewLabel">STUDENT ASSISTANT</p>
+                    <h2 id="viewTitle">Ask Northstar</h2>
+                </div>
+                <div class="header-actions"><span class="online">● Online</span><span id="userAvatar"
+                        class="avatar">NP</span>
+                    <div class="user"><b id="userName">Student</b><small id="userId">S000</small></div>
+                </div>
+            </header>
+            <section id="assistantView" class="view">
+                <div id="chat" class="chat"></div>
+                <div class="composer-wrap">
+                    <form id="form" class="composer"><span class="spark">✦</span><input id="msg" autocomplete="off"
+                            placeholder="Ask about fees, scholarships, attendance or policies"><button
+                            id="send">↑</button></form><small>Northstar AI can make mistakes. Verify important decisions
+                        with Student Services.</small>
+                </div>
+            </section>
+            <section id="servicesView" class="view d-none">
+                <div class="page-intro">
+                    <p>STUDENT SERVICES</p>
+                    <h1>Everything you need, in one place.</h1>
+                </div>
+                <div id="serviceGrid" class="service-grid"></div>
+            </section>
+            <section id="supportView" class="view d-none">
+                <div class="support-card"><span>SUPPORT DESK</span>
+                    <h1>Need help beyond the assistant?</h1>
+                    <p>Create a tracked support request through the assistant. Describe the issue and include the
+                        affected service.</p><button data-question="Please create a support ticket for my issue.">Start
+                        a support request →</button>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js?v=20"></script>
+</body>
+
+</html>

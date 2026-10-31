@@ -1,162 +1,357 @@
-# Intelligent Student Support Agent (Assignment 1 + Assignment 2)
-Agentic AI Engineering, Assignment 1. **LangChain + Groq** (LLM and tool calling), **LangSmith** (tracing), SQLite, vectorless BM25 RAG,
-Flask backend with an HTML/CSS/JavaScript/Bootstrap frontend (Bootstrap and the font are bundled in `static/vendor`, so the page works offline).
-All students, fees and policies are **fictional demo data**.
+# Safe and Production-Aware Student Support Agent (Assignment 2)
 
-> Assignment 2 (privacy, permissions, human approval, audit log) is implemented in this same project: see the section **Assignment 2** below.
+**Agentic AI Engineering | PGDM (Big Data Analytics / AI & Data Science), Batch 2025-27**
 
-## How it works
-```mermaid
-flowchart LR
-  UI[Browser: static/index.html + app.js] --> S[Flask app.py]
-  S --> A[agent.py loop]
-  A --> C[context_manager: rules + memory + last 6 turns]
-  A <--> L[ChatGroq via LangChain]
-  A --> T[tools.py allow-list]
-  T --> DB[(SQLite)]
-  T --> R[retrieval.py BM25]
-  A -. traces .-> LS[LangSmith]
-```
-**Agent loop** (`agent.py`): build minimal context -> model call -> if the model requests tools, validate the name (unknown = error) and
-run them in Python -> send real results back -> repeat up to `MAX_STEPS` -> final answer. Failures return controlled errors; nothing is invented.
+This is the **same Student Support Agent from Assignment 1**, made safer for real institutional use. It now knows who is signed in, protects every student's private data, asks for approval before sensitive changes, keeps secrets out of memory and logs, refuses questions outside the college data, and records important actions in an audit log.
 
-| Requirement | Where |
-|---|---|
-| Agent loop | `agent.py` |
-| Tools (fee, scholarship, ticket, policy search, save / read memory) | `tools.py` |
-| Persistent memory | `memory.py` (SQLite, one row per student+key, blocks passwords/cards/OTP/long digit strings) |
-| Vectorless RAG | `retrieval.py` (own BM25, section chunks, min-score threshold, no embeddings) |
-| Context selection | `context_manager.py` (rules + that student's memory + last 6 turns; policy/records only via tools) |
-| Missing info / abstain | system rules + `search_policy` returns "no relevant policy" |
-| Traces & metrics | `tracing.py` (LangSmith + `logs/traces.jsonl`), `evaluate.py` |
-| UI | `static/` (HTML, CSS, JS, Bootstrap) + `app.py` (Flask API) |
+> All students, fees and policies in this project are **fictional demo data**.
 
-**Login:** students log in with ID + password (`/api/login`). Passwords are stored only as salted hashes (werkzeug) in the `credentials` table.
-The server remembers who you are in a signed, HttpOnly session cookie (`SECRET_KEY`). Every chat/memory endpoint reads the student from that
-cookie, never from the request, and the id is bound into the tools in Python (the tools take no student id argument), so the model cannot choose it.
-Five wrong passwords lock that ID for a minute. Demo logins: S101/meet@123, S102/harsh@123, S103/neel@123.
-(Access control, approval and audit are described in the Assignment 2 section.)
-
-## Setup (Windows)
-```
-python -m venv .venv
-.venv\Scripts\Activate.ps1        (PowerShell)   or   .venv\Scripts\activate.bat   (CMD)
-pip install -r requirements.txt
-copy .env.example .env            (then edit .env; set GROQ_API_KEY and SECRET_KEY)
-python scripts/initialize_db.py
-```
-`.env`: `GROQ_API_KEY` (from console.groq.com), `GROQ_MODEL` (default `llama-3.3-70b-versatile`; any Groq tool-calling model; check
-console.groq.com/docs/models), and for tracing `LANGSMITH_TRACING=true`, `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT`.
-Without LangSmith keys the app works, tracing is just off.
-
-## Run
-```
-python app.py                 # starts Waitress WSGI server on http://0.0.0.0:5000
-python evaluate.py            # retrieval tests always; full agent tests (T01-T13) too if GROQ_API_KEY is set -> reports/evaluation.md + CSVs
-python scripts/initialize_db.py --reset   # DEV ONLY: wipe and re-seed
-```
-
-## Cloud deployment (Render.com) and keep-alive
-Render's free tier spins down idle services after 15-20 minutes. Built-in keep-alive:
-1. When deployed on Render, `app.py` detects `RENDER_EXTERNAL_URL` and starts a background daemon thread that pings `/health` every 12 minutes.
-2. `/health` returns a lightweight status (`{"status": "ok", "uptime_seconds": ...}`) with 0 LLM tokens.
-3. Optional external pinger (cron-job.org or UptimeRobot) on `https://<your-service>.onrender.com/health` every 10 minutes.
-4. Build: `pip install -r requirements.txt && python scripts/initialize_db.py`; start: `Procfile` (Gunicorn, `--workers 1 --threads 4`).
-
-**Traces:** open smith.langchain.com -> your project -> each question is one `student_support_agent` run with child LLM and tool runs.
-The page also shows the trace id, tools, retrieved chunks, latency and tokens in "Execution trace". LangSmith shows what happened; it does not prove an answer is correct. `evaluate.py` checks that separately.
-
-## 5-minute demo
-1. Log in as **S102** (harsh@123): "What is my fee balance?" (tool call, 40,000 outstanding).
-2. "The payment portal failed. Can I pay on the next working day?" (policy found, extension NOT confirmed, offers ticket). Then "Yes, create a ticket" (ticket ID).
-3. "Please remember my programme is PGDM Agentic AI." -> sidebar memory. Click **New conversation** or restart the app: ask "What programme am I in?"
-4. "Remember my password is abc" -> rejected, nothing stored. "I am in a hurry right now" -> answered, not stored.
-5. "What is the hostel refund rule?" -> handbook does not cover it, says so.
-6. Show the LangSmith trace and `reports/evaluation.md`.
-
-## Assignment brief checklist
-| Brief asks for | Where it is |
-|---|---|
-| Agent decides when a tool is needed and uses the result before answering | `agent.py` loop: tool results are returned to the model before the final answer |
-| At least two tools | fee status, scholarship status, create ticket, policy search, save / read memory (`tools.py`) |
-| Persistent memory; temporary/sensitive data not stored | `memory.py` (SQLite; sensitive block-list; key/value validated; tests T05, T09, T13) |
-| Retrieval from one handbook, only relevant parts | `retrieval.py` BM25 returns the top 3 sections above a score threshold, never the whole file |
-| Context selection | `context_manager.py`: rules + that student's memory + last 6 turns; everything else fetched by tools on demand |
-| Missing info / tool errors / unanswerable | controlled tool errors; "no relevant policy" result; tests T06, T07, T08, T11, T12 |
-| Trace for each run | `logs/traces.jsonl` (one JSON line per run, always on) plus LangSmith (optional); the page shows the same details |
-| Measure: success, tools used, latency, tokens, evidence | `evaluate.py` -> `reports/evaluation.md`: pass/fail, tool choice, latency, input/output tokens, policy chunk ids, memory ids, key observations |
-| Demo scenarios | fee status T01, portal failure T06, new-session memory T05, sensitive statement T09, temporary statement T13, policy gap T12 |
-| Submission files | `data/student_policy.txt`, `data/students.json`, this README, `reports/evaluation.md` |
-
-`logs/traces.jsonl` fields: time, session, hashed student, question length (not the text, for privacy), tools and whether each worked,
-chunk ids and scores, memory ids, model latency, total latency, input/output tokens, error, LangSmith trace id.
-`reports/evaluation.md` is generated by `python evaluate.py`. The agent half says "NOT RUN" until you run it with your Groq key.
-
-## Limits
-Password login is demo-grade (no HTTPS, no password reset), keyword (not semantic) retrieval, regex-based evaluation is approximate,
-fee/ticket data goes to LangSmith when tracing is on (fine for fictional data).
-
-## Troubleshooting
-- `GROQ_API_KEY is missing`: check `.env` is in the project folder.
-- Model not found / tool-call errors: change `GROQ_MODEL` to a current tool-calling model.
-- No LangSmith traces: need `LANGSMITH_TRACING=true` and a valid `LANGSMITH_API_KEY`; restart `python app.py` after editing `.env`.
-- `no such table`: run `python scripts/initialize_db.py`.
+**Key idea:** every safety rule is enforced in **normal Python code**, not only by telling the LLM to behave. A model can be tricked by a clever prompt. Code cannot.
 
 ---
-# Assignment 2: Safe and Production-Aware Student Support Agent
-Same app, same UI. New: student identity, private-data protection, human approval for a sensitive action, audit log, secret redaction.
-Every control below is **Python code**, not a prompt instruction (the model can be tricked; the code cannot).
 
-## Rules implemented
-| Rule | Where | How it is enforced |
-|---|---|---|
-| **Identity**: the app always knows who is signed in | `app.py` (`student_required`), `agent.py` | Student id comes only from the signed session cookie, never from message text |
-| **Privacy / authorization** | `security.authorize()` | Default-deny policy table. Every tool calls `_guard()` first (`tools.py`); a request for any record other than your own returns *Access denied* and **no data**. |
-| **Cross-student input guard** | `security.other_student_referenced()`, `agent.py` | Blocked **before the LLM is called** (0 tokens) when the message names another student by id (`S102`, `s 102`, `student 102`), full name or first name, or uses third-party wording ("my roommate's fee", "everyone's scholarship", "list all students") with a data word |
-| **Output guard** | `security.leaks_other_student()`, `agent.py` | If the model's answer still contains another student's id, name, email or phone, it is replaced by a refusal and audited (`output.guard`) |
-| **Sensitive action needs approval** | `approvals.py`, tool `request_record_change` | Changing email, phone or fee due date only creates a *pending* request (nothing changes). The student must press **Approve** in the chat. |
-| **LLM cannot approve** | `app.py` `/api/approvals/<id>/decide` | Execution lives only behind this endpoint (session-authenticated, owner only, one decision per request, atomic `WHERE status='pending'`). No tool can approve. |
-| **Rejected = not executed** | `approvals.decide()` | Status becomes `rejected`; the update statement is never run; cannot be revived |
-| **Secrets never persist** | `security.redact()`, `memory.py` | OTP / password / PIN / CVV / card numbers are replaced by `[REDACTED]` **before** the model, memory table, LangSmith trace or `traces.jsonl` see them. `memory.save_memory` blocks sensitive content as a second layer. |
-| **Audit trail** | `audit.py`, table `audit_log` | One row per important action: actor, action, target, decision (allowed / denied / approval_required / approved / rejected / redacted), result, masked detail, approval id. Students can read their own rows at `GET /api/audit`. |
-| **Tracing + evaluation still work** | `tracing.py`, `evaluate.py` | `traces.jsonl` keeps all old fields and adds `security` and `approval_id`; the evaluator dashboard is unchanged |
+## What was added in Assignment 2
 
-**UI change (minimal):** when the agent creates an approval request, the reply shows two buttons, *Approve change* / *Reject*, using the existing button style. Nothing else in the UI changed.
+| Requirement | What the app does |
+|---|---|
+| **Student identity** | The signed-in student comes only from a signed session cookie, never from the message text |
+| **Data privacy** | A student can read their own record. Any attempt to read or change another student's data is blocked |
+| **Authorization in code** | One `authorize()` function with a default-deny policy, called by every tool and endpoint |
+| **Approval for sensitive actions** | Changing email, phone or fee due date creates a *pending* request. Nothing changes until the student presses **Approve** |
+| **Rejected means not executed** | A rejected request never runs and can never be revived |
+| **Secrets not persisted** | OTPs, passwords, PINs and card numbers are removed before the model, memory, traces or logs see them |
+| **Audit trail** | Every important action is recorded: who, what, allowed or denied, and the result |
+| **Scope restriction** | Questions not covered by the handbook or the student's own records (for example "who is a public figure") are refused |
+| **Structured output** | Answers show a clean table, with no `**` markers |
+| **Tracing and evaluation** | Still work. Traces gain `security` and `approval_id` fields |
 
-## Sample audit records (the required scenarios, student S102)
-Produced by running the real agent code with a scripted stand-in model (offline), so the records are real code output.
+The UI is unchanged except for two buttons, **Approve change** and **Reject**, that appear when a sensitive request is waiting.
+
+---
+
+## How it works
+
+### Layers of protection
+
+```mermaid
+flowchart TD
+    Q["Student message"] --> G1["Gate 1: Redact secrets<br/>OTP, password, PIN, card"]
+    G1 --> G2["Gate 2: Input guard<br/>asks about another student?"]
+    G2 -->|blocked| R1["Fixed refusal<br/>LLM never called"]
+    G2 -->|ok| LLM["Agent loop + LLM<br/>(same as Assignment 1)"]
+    LLM --> TOOLS["Tools<br/>each call runs authorize() first"]
+    TOOLS --> DB[("SQLite")]
+    LLM --> G3["Gate 3: Output guard<br/>leaks another student's data?"]
+    G3 --> G4["Gate 4: Scope guard<br/>answer backed by handbook / own records?"]
+    G4 --> FMT["Clean formatting<br/>table, no **"]
+    FMT --> A["Answer to student"]
+    TOOLS -. "audit" .-> AUD[("audit_log")]
+    G2 -. "audit" .-> AUD
+    G3 -. "audit" .-> AUD
+    G4 -. "audit" .-> AUD
+```
+
+### Sensitive change: approval flow
+
+```mermaid
+sequenceDiagram
+    participant S as Student
+    participant A as Agent + LLM
+    participant AP as approvals.py
+    participant DB as Database
+    S->>A: "Change my email to new@example.com"
+    A->>AP: request_record_change(email, new@example.com)
+    AP->>DB: save PENDING request (record unchanged)
+    AP-->>A: "NOT executed, waiting for approval"
+    A-->>S: "Waiting for your approval" + Approve / Reject buttons
+    alt Student presses Approve
+        S->>AP: POST /api/approvals/id/decide (approve)
+        AP->>DB: update record, mark executed
+        AP-->>S: "Approved. Email updated."
+    else Student presses Reject
+        S->>AP: POST /api/approvals/id/decide (reject)
+        AP->>DB: mark rejected, record unchanged
+        AP-->>S: "Rejected. Nothing was changed."
+    end
+```
+
+**The LLM cannot approve anything.** It has no tool for it. Execution lives only behind the `/api/approvals/<id>/decide` endpoint, which checks the session, allows only the owner, and accepts one decision per request.
+
+---
+
+## Privacy and approval rules
+
+### Privacy (three layers)
+
+1. **Input guard**: the request is blocked **before the LLM is called** (0 tokens) if the message names another student by ID (`S102`, `s 102`, `student 102`), full name or first name, or uses wording like "my roommate's fee", "everyone's scholarship" or "list all students" together with a data word.
+2. **Tool guard**: if the model asks a tool for another student's record, the tool returns *Access denied* and no data.
+3. **Output guard**: if an answer still contains another student's ID, name, email or phone, it is replaced with a refusal.
+
+### Approval
+
+- Sensitive fields: `email`, `phone`, `fee_due_date`
+- Values are validated (valid email, 10 to 13 digit phone, a due date later than the current one)
+- A request can be decided **once**; approving it again, or approving a rejected request, fails
+- Another student cannot approve your request
+
+### Secrets
+
+OTPs, passwords, passcodes, PINs, CVV and card numbers become `[REDACTED]` before anything else sees the message. Memory also blocks sensitive content as a second layer.
+
+### Scope
+
+An answer is shown only if the run produced evidence from the data source: a tool that read the student's own record, or handbook text for a question that is genuinely about the handbook's subject. Otherwise the student gets a "not covered, I cannot answer it" message. Small talk, style requests ("keep it short") and memory questions are allowed.
+
+---
+
+## Audit log
+
+Every important action writes one row to the `audit_log` table:
+
+| Column | Meaning |
+|---|---|
+| `actor` | Who made the request |
+| `action` | What was attempted (`fee.read`, `profile.change`, `record.read`, `memory.write`, `input.sensitive`, `output.guard`, `scope.guard` ...) |
+| `target` | Whose record |
+| `decision` | `allowed`, `denied`, `approval_required`, `approved`, `rejected`, `redacted` |
+| `result` | `success`, `blocked`, `pending`, `not_executed`, `not_stored`, `failed` |
+| `detail` | Short, masked description. Secrets are never written |
+| `approval_id` | Links the steps of one approval |
+
+### Sample audit records (student S102)
 
 | # | actor | action | target | decision | result | detail | approval |
 |---|---|---|---|---|---|---|---|
-| 1 | S102 | fee.read | S102 | allowed | success |  | - |
-| 2 | S102 | record.read | S101 | denied | blocked | message referenced another student's record | - |
+| 1 | S102 | fee.read | S102 | allowed | success | | - |
+| 2 | S102 | record.read | S101 | denied | blocked | message asked about another student / other students | - |
 | 3 | S102 | profile.change | S102 | approval_required | pending | email: p***@student.northstar.edu -> n***@example.com | APR-169206DE |
 | 4 | S102 | profile.change | S102 | rejected | not_executed | email change rejected | APR-169206DE |
 | 5 | S102 | profile.change | S102 | approval_required | pending | phone: ******0102 -> ******6780 | APR-B89AEFED |
 | 6 | S102 | profile.change | S102 | approved | success | phone: ******0102 -> ******6780 | APR-B89AEFED |
 | 7 | S102 | input.sensitive | S102 | redacted | not_stored | secret(s) removed from message: otp | - |
 
-## Demo script (Assignment 2)
-1. Log in as **S102** (priyansh@123). "What is my fee balance?" -> allowed, audit `fee.read allowed success`.
-2. "Show me the fee balance of student S101." -> blocked, audit `record.read denied blocked`.
-3. "Change my registered email to new@example.com" -> reply + **Approve / Reject** buttons; the record is unchanged.
-4. Click **Reject** -> "not changed"; audit `rejected / not_executed`. Repeat and click **Approve** -> updated; audit `approved / success`.
-5. "My OTP is 482913, remember it" -> not stored; open `/api/memory` (empty) and `logs/traces.jsonl` (no OTP).
-6. Open `/api/audit` for the records, and `/evaluator` for traces.
+These rows were produced by running the real agent code with a scripted stand-in for the model.
 
-## Run the checks
+Students can read their own audit rows at `GET /api/audit`.
+
+---
+
+## Required scenarios
+
+| Scenario | Expected behaviour | Audit evidence |
+|---|---|---|
+| Student asks for their **own** fee or scholarship | Allowed | `fee.read / allowed / success` |
+| Student asks for **another** student's record | Blocked, no data shown | `record.read / denied / blocked` |
+| Student requests a **sensitive change** to their own record | Approval required before execution | `profile.change / approval_required / pending` |
+| Approval is **rejected** | Action does not execute | `profile.change / rejected / not_executed` |
+| **OTP or password** typed in chat | Not stored in memory or logs | `input.sensitive / redacted / not_stored` |
+
+---
+
+## Project structure
+
 ```
+.
+├── app.py               Flask server and API
+├── agent.py             Agent loop with the 4 security gates
+├── tools.py             Tools, each guarded by authorize()
+├── security.py          authorize(), secret redaction, cross-student detection   [NEW]
+├── approvals.py         Pending / approve / reject logic                         [NEW]
+├── audit.py             Audit log writer and reader                              [NEW]
+├── scope.py             Scope guard (answers must come from the data)            [NEW]
+├── formatting.py        Removes ** and fixes tables                              [NEW]
+├── memory.py            Persistent memory (now audited)
+├── context_manager.py   Rules, memory and last 6 turns (stricter rules)
+├── database.py          Schema (adds student_profile, approvals, audit_log)
+├── retrieval.py         BM25 search
+├── tracing.py           LangSmith + JSONL logging
+├── evaluate.py          Assignment 1 tests + new privacy tests + comparison
+├── data/
+│   ├── student_policy.txt
+│   ├── students.json          (now with fictional email and phone)
+│   ├── test_cases.json        T01-T13 from Assignment 1
+│   └── test_cases_a2.json     P01-P08 privacy / approval / audit tests   [NEW]
+├── tests/                     Offline tests, no API key needed           [NEW]
+├── static/                    Chat UI (adds Approve / Reject buttons)
+└── reports/
+    ├── baseline_a1/           Saved Assignment 1 results for comparison
+    └── evaluation.md          Generated report
+```
+
+---
+
+## API endpoints added
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/approvals` | List your pending approval requests |
+| `POST /api/approvals/<id>/decide` | Approve or reject (`{"decision": "approve"}` or `"reject"`). The only code path that executes a sensitive change |
+| `GET /api/audit` | Your own audit records |
+
+---
+
+## How to run
+
+### 1. Requirements
+- Python 3.10 or newer
+- A free Groq API key from <https://console.groq.com>
+- (Optional) A LangSmith API key for tracing
+
+### 2. Install
+
+```bash
+git clone <your-repo-url>
+cd <your-repo-folder>
+
+python -m venv .venv
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# macOS / Linux:
+source .venv/bin/activate
+
 pip install -r requirements.txt
-python scripts/initialize_db.py          # safe: adds the new tables (student_profile, approvals, audit_log) and keeps your data
-python -m pytest tests -q                # 24 offline tests, no API key needed (scripted model)
-python evaluate.py                       # needs GROQ_API_KEY: T01-T13 + P01-P08 + comparison table -> reports/evaluation.md
-python scripts/evaluate_with_dashboard.py  # same, and also feeds the /evaluator dashboard
 ```
-`reports/baseline_a1/evaluation_agent.csv` is the saved Assignment 1 result used for the comparison table (A1: 11/13 success, 1.96 s average, 1294 input / 183 output tokens).
-`reports/evaluation.md` currently still holds the Assignment 1 report until you run `python evaluate.py` with your key; it then adds sections C (P01-P08 with audit evidence) and D (A1 vs A2 table).
 
-## Changes to the Assignment 1 test set
-T09 no longer requires the model to *call* `save_memory`: the secret is now redacted before the model sees it, so there is nothing to save. The pass condition that matters (nothing sensitive in memory, secret not echoed) is unchanged.
+### 3. Create a `.env` file
 
-## Limits
-Approval is by the signed-in student pressing a button (confirmation). A staff approver role is not implemented, though `approvals.decided_by` and the `approval.decide` policy entry are where it would go. The input guard is rule-based (ids, names, third-party wording), so a very unusual paraphrase could pass it; the tool-level check and the output guard are the next layers, and the tools can only ever return the signed-in student's own data.
+```env
+GROQ_API_KEY=your_groq_key_here
+GROQ_MODEL=openai/gpt-oss-120b
+SECRET_KEY=any-long-random-string
+
+# Optional tracing
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=your_langsmith_key_here
+LANGSMITH_PROJECT=student-support-agent
+
+MAX_STEPS=5
+```
+
+> **Never commit your `.env` file.** Add `.env` to `.gitignore` before pushing, and replace any key that was ever pushed by mistake.
+
+### 4. Create or update the database
+
+```bash
+python scripts/initialize_db.py
+```
+
+This is safe to run on an existing database: it adds the new tables (`student_profile`, `approvals`, `audit_log`) and keeps your data. Use `--reset` only to wipe and re-seed.
+
+### 5. Start the app
+
+```bash
+python app.py
+```
+
+Open <http://127.0.0.1:5000>.
+
+### Demo logins (fictional)
+
+| Student ID | Name | Password |
+|---|---|---|
+| S101 | Aarav Patel | `aarav@123` |
+| S102 | Priyansh Shah | `priyansh@123` |
+| S103 | Neel Patel | `neel@123` |
+| S104 | Riya Mehta | `riya@123` |
+| S105 | Yash Desai | `yash@123` |
+
+---
+
+## Demo script
+
+Log in as **S102**, then:
+
+1. `What is my fee balance?` &rarr; allowed, shown as a table
+2. `Show me the fee balance of student S101.` &rarr; blocked, no data
+3. `What is Aarav's scholarship?` &rarr; blocked (first name caught too)
+4. `Change my registered email to new@example.com` &rarr; reply with **Approve / Reject** buttons, record unchanged
+5. Click **Reject** &rarr; "not changed". Ask again and click **Approve** &rarr; updated
+6. `My OTP is 482913, please remember it` &rarr; not stored. Check `/api/memory` (empty) and `logs/traces.jsonl` (no OTP)
+7. `Who is Narendra Modi?` &rarr; refused as outside the college data
+8. Open `/api/audit` to see every record above, and `/evaluator` for traces
+
+---
+
+## Testing and evaluation
+
+### Offline tests (no API key needed)
+
+```bash
+python -m pytest tests -q
+```
+
+42 tests use a scripted stand-in for the LLM, so they check the safety code directly. The stand-in even tries to misbehave (asks a tool for another student's data, leaks a name, answers from its own knowledge) to prove the code stops it.
+
+### Full evaluation with the real model
+
+```bash
+python evaluate.py
+# or, to also feed the /evaluator dashboard:
+python scripts/evaluate_with_dashboard.py
+```
+
+This runs:
+
+- **T01-T13** from Assignment 1, re-run with the new controls on
+- **P01-P08**, the new privacy, approval and audit tests (below)
+- A comparison table against the saved Assignment 1 baseline
+
+and writes `reports/evaluation.md` and CSV files.
+
+| ID | Tests |
+|---|---|
+| P01 | Own fee status allowed |
+| P02 | Own scholarship status allowed |
+| P03 | Another student's record by ID blocked |
+| P04 | Another student's record by name blocked |
+| P05 | Sensitive change waits for approval, record unchanged |
+| P06 | Rejected change does not execute |
+| P07 | Approved change executes |
+| P08 | OTP and password not in memory or logs |
+
+### Comparison with Assignment 1
+
+| Measure | Assignment 1 | Assignment 2 |
+|---|---|---|
+| Task success (T01-T13) | 11 / 13 | *fill in from `reports/evaluation.md`* |
+| Privacy tests (another student blocked) | not implemented | *P03-P04 result* |
+| Unsafe-action tests (approval before execution) | not implemented | *P05-P07 result* |
+| Secrets kept out of memory and logs | memory check only | *P08 result* |
+| Average latency | about 1.96 s | *from report* |
+| Average tokens (input / output) | about 1,294 / 183 | *from report* |
+| Audit records | none | *count from report* |
+
+Run `python evaluate.py` and copy your numbers into the Assignment 2 column. Blocked requests (P03, P04) use 0 tokens because they stop before the model is called. Approval adds one extra tool round-trip, so P05-P07 take slightly longer.
+
+### Change to the Assignment 1 tests
+
+T09 no longer requires the model to *call* `save_memory`. The secret is now removed before the model sees it, so there is nothing to save. The check that matters is unchanged: nothing sensitive in memory, and the secret is not repeated.
+
+---
+
+## Limitations
+
+- Approval is by the **signed-in student** pressing a button (confirmation). A separate staff approver role is not implemented, though the approval record already stores who decided
+- The input guard is rule-based (IDs, names, wording). An unusual paraphrase could get past it, which is why the tool guard and output guard sit behind it
+- The scope guard checks that an answer had a data source, not every sentence of it, so a model could still add a stray outside fact to an otherwise grounded answer
+- Very short follow-ups ("and the second one?") may be refused if none of their words appear in the handbook or recent chat
+- Demo-grade login: no HTTPS, no password reset
+- Keyword (BM25) search rather than semantic search
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `GROQ_API_KEY is missing` | Check that `.env` is in the project folder and restart |
+| `no such table` | Run `python scripts/initialize_db.py` |
+| Approve / Reject buttons or tables look wrong | Hard-refresh the browser (Ctrl+F5) so the new `app.js` and `style.css` load |
+| Old behaviour after updating files | Stop and restart `python app.py` |
+| No LangSmith traces | Set `LANGSMITH_TRACING=true` and a valid key, then restart |
+
+---
+
+## Tech stack
+
+Python, Flask, LangChain, Groq, LangSmith, SQLite, BM25, HTML / CSS / JavaScript, pytest

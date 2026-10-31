@@ -1,0 +1,152 @@
+SAMPLE STUDENT HANDBOOK & ACADEMIC POLICIES (COMPREHENSIVE EDITION)
+
+## Fee Payment Deadlines
+Tuition fees and semester academic charges must be paid in full on or before the official due date published in the student fee record. Fee payments must be completed via the official online student payment portal using Net Banking, UPI, debit/credit cards, or verified institute NEFT/RTGS transfer. Standard institutional due dates are:
+1. Odd Semester Tuition: 31 October.
+2. Even Semester Tuition: 15 November.
+3. Summer Term / Remedial Course Fee: 15 June.
+Students can view their itemized invoices (tuition, laboratory, library access, and examination fees) on the portal. An installment facility (50% upfront, 50% within 30 days) is available upon formal request submitted to the Finance Office at least 10 working days prior to the due date.
+
+## Late Payment Procedure
+Any payment recorded after 11:59 PM on the due date is categorized as a late payment. A late fee penalty of 2 percent of the outstanding balance applies per week of delay (or fraction of a week). 
+- Week 1 delay: 2% late penalty on outstanding amount.
+- Week 2 delay: 4% cumulative late penalty.
+- Delays exceeding 4 weeks: Subject to temporary restriction of course registration, withholding of examination admit cards, and portal suspension.
+Students anticipating genuine delays due to educational loan disbursements, banking hurdles, or hardship must raise a support ticket under the category "fee" before the official due date to request a fee extension or waiver.
+
+## Payment Portal Failure
+If the online payment portal encounters a technical glitch, gateway timeout, or transaction failure during payment:
+1. Do not initiate an immediate duplicate payment if funds were debited from your bank account.
+2. Capture a clear screenshot of the error message, noting the exact date, transaction timestamp, and bank UTR / reference number.
+3. Report the failure immediately by creating a support ticket in the category "portal" within 1 working day (24 hours on business days).
+4. The institute finance office reconciles transaction logs with the payment gateway within 1 to 2 working days.
+5. In the case of duplicate debits, automatic refunds are reconciled and credited to the student source bank account within 5 to 7 working days.
+6. The handbook does not state whether a deadline extension is granted after a portal failure; any extension must be confirmed by the finance office.
+
+## Working Day Definition
+A working day is Monday to Friday, between 9:00 AM and 5:30 PM, excluding official public holidays and institute holidays declared in the academic calendar. Saturdays and Sundays are not working days. All service-level agreements (SLAs), support ticket resolution windows, approval timelines, and notice periods are calculated solely on working days. Inquiries or requests submitted after 5:30 PM or over weekends commence their SLA clock at 9:00 AM on the following working day.
+
+## Scholarship Eligibility
+The institute offers both merit-based and need-based financial scholarships to support students:
+- Merit Scholarships: Awarded to students demonstrating exceptional academic performance with a cumulative grade point average (CGPA) of 8.0 or higher on a 10.0 scale, without any standing academic arrears or disciplinary penalties.
+  - CGPA 8.00 - 8.99: 50% tuition fee waiver.
+  - CGPA 9.00 - 10.00: 100% full tuition fee waiver.
+- Need-Based Financial Aid: Open to students with a certified annual gross family income below INR 5,00,000 (supported by authentic revenue officer income certificate and ITR) and maintaining a minimum CGPA of 6.5. Provides up to 60% tuition concession.
+- Policy Constraint: A student may hold only one institute scholarship at any given time. Scholarships are reviewed annually and require maintaining the qualifying CGPA throughout the programme.
+
+## Scholarship Application Procedure
+Eligible students must submit their scholarship application through the student office portal before 30 September each academic year.
+Required documents include:
+1. Certified academic marksheets / transcripts of preceding semesters.
+2. Income declaration certificate and latest income tax assessment (for need-based aid).
+3. Active bank account verification and student ID proof.
+Applications undergo rigorous review by the Faculty Scholarship Committee within 4 to 6 weeks. Students can monitor their real-time application status on the portal dashboard, displayed as: "pending", "under_review", "approved", or "rejected". Approved amounts are adjusted directly against next semester tuition fees.
+
+## Course Change Requests
+Students wishing to change an elective course or academic programme track must submit a formal course change request within the first 2 weeks of the semester.
+Requirements for course change:
+1. The student must fill the online course change form and detail the academic rationale.
+2. The change requires written academic approval from both the Programme Coordinator and the Academic Dean.
+3. Requests are subject to prerequisite fulfillment and seat availability limits in the target course section. Approval is not guaranteed and transfers are not entertained after the 2-week deadline.
+
+## Support Tickets
+Students can raise a support ticket anytime via the student desk for issues across five official categories:
+- "fee": tuition fee queries, receipt generation, installment requests, late fee waivers.
+- "scholarship": application status, eligibility clarification, renewal inquiries.
+- "course_change": elective transfer requests, coordinator approvals, credit transfers.
+- "portal": payment gateway errors, login authentication failures, portal crashes.
+- "other": general administrative questions, ID card queries, bonafide certificates.
+Each submitted ticket is automatically assigned a unique ticket ID (format: TCK-XXXXXXXX). The dedicated student support team investigates and replies within 2 working days.
+
+## Escalation Procedure
+If a support ticket is not answered or resolved within 2 working days, the student may escalate the matter through the institutional hierarchy:
+- Step 1: Forward the ticket reference via email to the Head of Student Affairs (studentaffairs@sample-institute.edu).
+- Step 2: Urgent financial or payment portal escalation may be sent directly to the Finance Office (finance@sample-institute.edu) or attended during walk-in grievance hours (2:00 PM to 4:00 PM, Monday to Friday).
+- Step 3: For complex academic grievances unresolved after 5 working days, students may submit a formal petition to the Dean of Academic Affairs.
+
+## Items Requiring Confirmation From the Institution
+Refund rules, hostel fee rules, exam re-evaluation fees, and attendance exemptions are not covered in this sample handbook. Students must confirm these with the institution. Specifically, the hostel refund rule, special room re-allocation, attendance waivers beyond standard policy, and fee adjustments require written confirmation from the Registrar and Finance Director.
+
+## Attendance Policy and Minimum Requirements
+The institute mandates regular classroom, tutorial, and laboratory engagement:
+1. Minimum Attendance: Every registered student must maintain a minimum of 75% attendance in each individual course to be eligible to sit for the end-semester examinations.
+2. Medical and Official Duty Condonation: A condonation allowance of up to 10% (permitting a minimum threshold of 65% attendance) may be granted by the Academic Dean under verified circumstances:
+   - Certified medical illness or hospitalization exceeding 3 consecutive days, supported by a medical certificate from a registered physician submitted within 5 working days of return.
+   - Authorized participation in inter-collegiate sports tournaments, national technical symposiums, or institute-sanctioned extra-curricular delegations.
+3. Attendance Shortage & Detention: Students with attendance below 75% (or below 65% with approved condonation) are awarded an 'FA' (Failed due to Attendance) grade and detained from the course end-semester examination. Detained students must re-register for the course during the subsequent academic cycle.
+
+## Grading System and CGPA Calculation
+Academic performance is evaluated using a comprehensive 10-point letter grading scale:
+- O (Outstanding): Grade Point 10.0 (90% to 100%)
+- A+ (Excellent): Grade Point 9.0 (80% to 89%)
+- A (Very Good): Grade Point 8.0 (70% to 79%)
+- B+ (Good): Grade Point 7.0 (60% to 69%)
+- B (Above Average): Grade Point 6.0 (55% to 59%)
+- C (Average): Grade Point 5.0 (50% to 54%)
+- P (Pass): Grade Point 4.0 (40% to 49%)
+- F (Fail / Arrear): Grade Point 0.0 (Below 40%)
+Calculation Formulas:
+- Semester Grade Point Average (SGPA) = Sum of (Course Credits * Grade Point) divided by Total Semester Credits.
+- Cumulative Grade Point Average (CGPA) = Sum of (Course Credits * Grade Point across all semesters) divided by Total Cumulative Credits.
+- Passing Standard: A student must secure at least grade 'P' in both continuous internal assessments and semester-end examinations, and an overall CGPA of at least 5.0 to be eligible for degree graduation.
+
+## Examination Rules and Hall Regulations
+End-semester and mid-term assessments are conducted under strict examination protocols:
+1. Admit Card Mandatory: Every student must present a printed Hall Ticket / Admit Card and valid institute Photo ID card to enter the examination hall.
+2. Reporting Time: Candidates must report 15 minutes before the exam start. No candidate is permitted entry after 15 minutes past the start time.
+3. Prohibited Items: Mobile phones, smart wristwatches, wireless earphones, unauthorized formula sheets, programmable calculators, and digital data devices are strictly prohibited.
+4. Academic Integrity: Plagiarism, unauthorized whispering, sharing calculators, or possession of unauthorized study material results in immediate confiscation of answer books, summoning before the Academic Malpractice Committee, and severe penalties including course cancellation.
+
+## Exam Re-Evaluation and Grade Review Procedure
+Students who believe their exam answers were scored incorrectly or omissions occurred may request a formal grade review:
+1. Application Window: Within 10 working days of the publication of official semester examination results on the student portal.
+2. Application Fee: INR 500 per theoretical course paper, paid online. The fee is fully refunded if the re-evaluation results in an upward grade revision.
+3. Re-evaluation Process: The examination script is masked and independently evaluated by an external subject expert.
+4. Grade Revision Policy: If the re-evaluated score differs by 5% or more from original marks, the higher score is adopted and a revised marksheet is issued within 15 working days.
+
+## Hostel Regulations and Curfew Guidelines
+Residents of campus hostels must abide by community living codes and safety standards:
+1. Curfew Hours: Weekday curfew is 10:00 PM (Sunday to Thursday); Weekend curfew is 10:30 PM (Friday and Saturday). Biometric attendance is recorded at all hostel entry gates.
+2. Night-Out & Weekend Passes: Overnight leave requires submitting an online pass request on the hostel portal at least 24 hours in advance, accompanied by automated digital approval from the registered parent or local guardian.
+3. Quiet Hours: 11:00 PM to 6:00 AM are designated as mandatory quiet hours in residential blocks to facilitate sleep and focused study.
+4. Room Amenities & Safety: Cooking appliances, electric heaters, immersion rods, and unauthorized high-wattage electronics are prohibited in rooms. Visitor access is restricted to the reception lounge from 9:00 AM to 6:30 PM.
+
+## Library Access and Book Borrowing Rules
+The Central Campus Library provides extensive physical and electronic resources:
+1. Operating Hours: Open Monday through Saturday from 8:00 AM to 10:00 PM (extended to 12:00 Midnight during mid-term and semester final exams).
+2. Borrowing Quotas:
+   - Undergraduate Students: Up to 4 physical books for a 14-day borrowing loan period.
+   - Postgraduate / Research Students: Up to 6 physical books for a 21-day loan period.
+3. Renewals: Items may be renewed up to 2 times online via the library portal if no reservation hold exists.
+4. Overdue Penalties: An overdue fine of INR 5 per day per book applies for the first 7 days of delay; INR 10 per day thereafter. Damaged or lost books must be replaced with a fresh copy or paid at 150% of the publisher replacement list price.
+
+## Student Leave of Absence and Medical Leave
+Students requiring absence from regular instructional schedules must follow the formal leave procedure:
+1. Planned Short Leave: Up to 3 consecutive working days may be requested through the student portal with prior academic mentor recommendation.
+2. Medical Leave: Absences exceeding 3 consecutive working days due to illness, surgery, or contagious condition require submitting a medical fitness certificate issued by an authorized physician (MBBS/MD) within 5 working days of resuming campus attendance.
+3. Semester Break / Freeze: In cases of severe chronic illness or extraordinary personal hardship, a student may apply to the Academic Dean for a formal semester withdrawal (academic pause) without academic disqualification.
+
+## Internship and Placement Eligibility Criteria
+The Institute Training and Placement Cell facilitates summer internships and career placements under clear merit guidelines:
+1. Academic Benchmark: Minimum CGPA of 6.5 with zero active academic backlogs at the time of campus recruitment drive registration.
+2. Career Readiness Attendance: Minimum 85% attendance required in mandatory employability skills workshops, mock technical interviews, and resume clinics.
+3. Placement Policy: A "One-Student One-Offer" rule applies. Once a student receives an offer meeting institutional threshold packages, they are deemed placed to ensure equitable opportunities for peers.
+4. Summer Internship: Mandatory 8-week summer internship for 2nd-year PG and 3rd-year UG students, evaluated through a formal faculty defense presentation and industry mentor feedback.
+
+## Student Identity Cards and Replacement Procedure
+The Institute Student ID card serves as an official proof of enrollment and campus access credential:
+1. Wearing ID Card: All students must wear their official physical lanyard ID badge while on campus premises, in academic buildings, dining halls, laboratories, and examination centers.
+2. Lost Card Protocol: Lost ID cards must be reported immediately on the student portal to deactivate library and door access credentials.
+3. Replacement Card: A replacement card can be ordered via the portal with a replacement processing fee of INR 200. The newly printed ID card can be picked up at the Security Administration Office within 2 working days.
+
+## Anti-Ragging Policy and Zero Tolerance
+The institute enforces a strict zero-tolerance code regarding ragging, hazing, harassment, or intimidation:
+1. Definition: Any act of teasing, mental or physical abuse, asking embarrassing questions, or coercing a junior or peer constitutes illegal ragging under the Supreme Court of India directives.
+2. 24/7 Helpline & Reporting: Students can report any incident confidentially to the 24/7 National Anti-Ragging Helpline (1800-180-5522) or campus Anti-Ragging Squad (antiragging@sample-institute.edu).
+3. Disciplinary Action: Proven offenses lead to immediate academic suspension, police FIR, hostel eviction, and permanent expulsion with disqualification from admitting institutions.
+
+## Official Certificates and Transcripts
+Students can apply for formal institutional documentation through the Student Support Portal:
+1. Bonafide Certificates: For bank education loans, passport/visa processing, or travel concessions; issued within 2 working days.
+2. Official Academic Transcripts: Detailed grade transcripts for higher education or foreign universities; processed in 5 to 7 working days at INR 250 per sealed official copy.
+3. No-Dues Clearance: Digital exit clearance required from the library, hostel, laboratory, sports club, and finance department prior to provisional degree conferral.

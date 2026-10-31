@@ -1,103 +1,279 @@
-# Assignment 1: Intelligent Student Support Agent
-Agentic AI Engineering, Assignment 1. **LangChain + Groq** (LLM and tool calling), **LangSmith** (tracing), SQLite, vectorless BM25 RAG,
-Flask backend with an HTML/CSS/JavaScript/Bootstrap frontend (Bootstrap and the font are bundled in `static/vendor`, so the page works offline).
-All students, fees and policies are **fictional demo data**.
+# Student Support Agent (Assignment 1)
 
-> Assignment 2 (privacy, permissions, human approval, audit log) is the next folder, `../Assignment_2`. It extends this same agent.
+**Agentic AI Engineering | PGDM (Big Data Analytics / AI & Data Science), Batch 2025-27**
+
+A chat-style AI assistant for a college student portal. A student logs in and asks about fees, scholarships, policies or support tickets. The agent decides **when to use a tool**, looks up the data, and answers only from what it found. It remembers useful facts between sessions and says so honestly when it does not know something.
+
+> All students, fees and policies in this project are **fictional demo data**.
+
+---
+
+## Features
+
+- **Agent loop**: the model decides if a tool is needed, the tool runs in Python, and the real result goes back to the model before the final answer
+- **6 tools**: fee status, scholarship status, create support ticket, search handbook, save memory, read memory
+- **Persistent memory** (SQLite): remembers things like "my programme is PGDM"; refuses passwords, card numbers and OTPs
+- **Vectorless RAG**: own BM25 keyword search over one handbook. No embeddings and no vector database. Returns only the top 3 relevant sections
+- **Honest answers**: if the handbook does not cover something, the agent says so instead of guessing
+- **Login** with student ID and password (salted hashes, signed session cookie)
+- **Tracing**: every run is logged to `logs/traces.jsonl` and optionally to LangSmith
+- **Evaluation**: 13 agent tests plus 9 retrieval tests, with a generated report
+
+---
 
 ## How it works
+
 ```mermaid
 flowchart LR
-  UI[Browser: static/index.html + app.js] --> S[Flask app.py]
-  S --> A[agent.py loop]
-  A --> C[context_manager: rules + memory + last 6 turns]
-  A <--> L[ChatGroq via LangChain]
-  A --> T[tools.py allow-list]
-  T --> DB[(SQLite)]
-  T --> R[retrieval.py BM25]
-  A -. traces .-> LS[LangSmith]
+    UI["Browser<br/>static/index.html + app.js"] --> API["Flask API<br/>app.py"]
+    API --> AG["Agent loop<br/>agent.py"]
+    AG --> CTX["Context builder<br/>rules + memory + last 6 turns"]
+    AG <--> LLM["Groq LLM<br/>via LangChain"]
+    AG --> TL["Tools<br/>tools.py"]
+    TL --> DB[("SQLite<br/>students, fees, tickets, memory")]
+    TL --> RAG["BM25 search<br/>retrieval.py"]
+    RAG --> POL[["student_policy.txt"]]
+    AG -. "traces" .-> LS["LangSmith + traces.jsonl"]
 ```
-**Agent loop** (`agent.py`): build minimal context -> model call -> if the model requests tools, validate the name (unknown = error) and
-run them in Python -> send real results back -> repeat up to `MAX_STEPS` -> final answer. Failures return controlled errors; nothing is invented.
 
-| Requirement | Where |
+### What happens when a student asks a question
+
+```mermaid
+sequenceDiagram
+    participant S as Student
+    participant A as Agent (agent.py)
+    participant M as LLM (Groq)
+    participant T as Tools (Python)
+    S->>A: "What is my fee balance?"
+    A->>M: rules + student memory + last 6 turns + question
+    M-->>A: call get_fee_status
+    A->>T: run tool (student id is fixed by the server)
+    T-->>A: {total, paid, outstanding, due date}
+    A->>M: real tool result
+    M-->>A: final answer
+    A-->>S: answer + trace (tools, latency, tokens)
+```
+
+The loop repeats up to `MAX_STEPS` (default 5). Unknown tool names are rejected, and errors come back as controlled messages, never invented answers.
+
+---
+
+## Tools
+
+| Tool | What it does |
 |---|---|
-| Agent loop | `agent.py` |
-| Tools (fee, scholarship, ticket, policy search, save / read memory) | `tools.py` |
-| Persistent memory | `memory.py` (SQLite, one row per student+key, blocks passwords/cards/OTP/long digit strings) |
-| Vectorless RAG | `retrieval.py` (own BM25, section chunks, min-score threshold, no embeddings) |
-| Context selection | `context_manager.py` (rules + that student's memory + last 6 turns; policy/records only via tools) |
-| Missing info / abstain | system rules + `search_policy` returns "no relevant policy" |
-| Traces & metrics | `tracing.py` (LangSmith + `logs/traces.jsonl`), `evaluate.py` |
-| UI | `static/` (HTML, CSS, JS, Bootstrap) + `app.py` (Flask API) |
+| `get_fee_status` | Total fees, paid, outstanding balance and due date for the logged-in student |
+| `check_scholarship_status` | Scholarship status and details |
+| `create_support_ticket` | Creates a ticket and returns its ID |
+| `search_policy` | BM25 search over the handbook, top 3 sections above a relevance threshold |
+| `save_memory` | Saves a durable fact (key + value) for this student |
+| `get_saved_memory` | Reads this student's saved facts |
 
-**Login:** students log in with ID + password (`/api/login`). Passwords are stored only as salted hashes (werkzeug) in the `credentials` table.
-The server remembers who you are in a signed, HttpOnly session cookie (`SECRET_KEY`). Every chat/memory endpoint reads the student from that
-cookie, never from the request, and the id is bound into the tools in Python (the tools take no student id argument), so the model cannot choose it.
-Five wrong passwords lock that ID for a minute. Demo logins: S101/meet@123, S102/harsh@123, S103/neel@123.
-(Access control, approval and audit beyond this are the subject of Assignment 2.)
+The student ID is **bound into the tools by the server**. The tools take no student-ID argument, so the model cannot choose whose record to read.
 
-## Setup (Windows)
+---
+
+## Memory and context
+
+- Memory lives in SQLite, one row per student and key (for example `programme = PGDM Agentic AI`), and survives a restart.
+- Sensitive content (passwords, card numbers, OTPs, long digit strings) is blocked.
+- Temporary statements ("I am in a hurry right now") are answered but not stored.
+- Each model call receives only: the system rules, that student's saved memory, and the last 6 turns. Policy text and records are fetched by tools on demand, never pasted in whole.
+
+---
+
+## Project structure
+
 ```
+.
+├── app.py               Flask server and API (login, chat, memory, health, evaluator)
+├── agent.py             The agent loop
+├── tools.py             The 6 tools
+├── retrieval.py         BM25 search (no embeddings)
+├── memory.py            Persistent memory with safety checks
+├── context_manager.py   System rules + memory + recent turns
+├── database.py          SQLite schema and seeding
+├── tracing.py           LangSmith + JSONL logging
+├── evaluate.py          Test runner and report generator
+├── config.py            Settings read from .env
+├── schemas.py           Response models
+├── data/
+│   ├── student_policy.txt     The one handbook used for retrieval
+│   ├── students.json          Fictional students, fees, scholarships
+│   ├── test_cases.json        Agent tests T01-T13
+│   └── retrieval_cases.json   Retrieval tests
+├── scripts/
+│   ├── initialize_db.py       Create / reset the database
+│   └── evaluate_with_dashboard.py
+├── static/              Chat UI and evaluator dashboard
+├── reports/             Generated evaluation report and CSVs
+└── logs/traces.jsonl    One JSON line per agent run
+```
+
+---
+
+## How to run
+
+### 1. Requirements
+- Python 3.10 or newer
+- A free Groq API key from <https://console.groq.com>
+- (Optional) A LangSmith API key from <https://smith.langchain.com> for tracing
+
+### 2. Install
+
+```bash
+git clone <your-repo-url>
+cd <your-repo-folder>
+
 python -m venv .venv
-.venv\Scripts\Activate.ps1        (PowerShell)   or   .venv\Scripts\activate.bat   (CMD)
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# Windows CMD:
+.venv\Scripts\activate.bat
+# macOS / Linux:
+source .venv/bin/activate
+
 pip install -r requirements.txt
-copy .env.example .env            (then edit .env; set GROQ_API_KEY and SECRET_KEY)
+```
+
+### 3. Create a `.env` file in the project folder
+
+```env
+GROQ_API_KEY=your_groq_key_here
+GROQ_MODEL=openai/gpt-oss-120b
+SECRET_KEY=any-long-random-string
+
+# Optional tracing
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=your_langsmith_key_here
+LANGSMITH_PROJECT=student-support-agent
+
+MAX_STEPS=5
+```
+
+`GROQ_MODEL` can be any current Groq model that supports tool calling. Without LangSmith keys the app still works; tracing is simply off.
+
+> **Never commit your `.env` file.** Add `.env` to `.gitignore` before pushing, and rotate any key that was ever pushed by mistake.
+
+### 4. Create the database
+
+```bash
 python scripts/initialize_db.py
 ```
-`.env`: `GROQ_API_KEY` (from console.groq.com), `GROQ_MODEL` (default `llama-3.3-70b-versatile`; any Groq tool-calling model; check
-console.groq.com/docs/models), and for tracing `LANGSMITH_TRACING=true`, `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT`.
-Without LangSmith keys the app works, tracing is just off.
 
-## Run
-```
-python app.py                 # starts Waitress WSGI server on http://0.0.0.0:5000
-python evaluate.py            # retrieval tests always; full agent tests (T01-T13) too if GROQ_API_KEY is set -> reports/evaluation.md + CSVs
-python scripts/initialize_db.py --reset   # DEV ONLY: wipe and re-seed
+### 5. Start the app
+
+```bash
+python app.py
 ```
 
-## Cloud deployment (Render.com) and keep-alive
-Render's free tier spins down idle services after 15-20 minutes. Built-in keep-alive:
-1. When deployed on Render, `app.py` detects `RENDER_EXTERNAL_URL` and starts a background daemon thread that pings `/health` every 12 minutes.
-2. `/health` returns a lightweight status (`{"status": "ok", "uptime_seconds": ...}`) with 0 LLM tokens.
-3. Optional external pinger (cron-job.org or UptimeRobot) on `https://<your-service>.onrender.com/health` every 10 minutes.
-4. Build: `pip install -r requirements.txt && python scripts/initialize_db.py`; start: `Procfile` (Gunicorn, `--workers 1 --threads 4`).
+Open <http://127.0.0.1:5000>.
 
-**Traces:** open smith.langchain.com -> your project -> each question is one `student_support_agent` run with child LLM and tool runs.
-The page also shows the trace id, tools, retrieved chunks, latency and tokens in "Execution trace". LangSmith shows what happened; it does not prove an answer is correct. `evaluate.py` checks that separately.
+### Demo logins (fictional)
 
-## 5-minute demo
-1. Log in as **S102** (harsh@123): "What is my fee balance?" (tool call, 40,000 outstanding).
-2. "The payment portal failed. Can I pay on the next working day?" (policy found, extension NOT confirmed, offers ticket). Then "Yes, create a ticket" (ticket ID).
-3. "Please remember my programme is PGDM Agentic AI." -> sidebar memory. Click **New conversation** or restart the app: ask "What programme am I in?"
-4. "Remember my password is abc" -> rejected, nothing stored. "I am in a hurry right now" -> answered, not stored.
-5. "What is the hostel refund rule?" -> handbook does not cover it, says so.
-6. Show the LangSmith trace and `reports/evaluation.md`.
+| Student ID | Name | Password |
+|---|---|---|
+| S101 | Aarav Patel | `aarav@123` |
+| S102 | Priyansh Shah | `priyansh@123` |
+| S103 | Neel Patel | `neel@123` |
+| S104 | Riya Mehta | `riya@123` |
+| S105 | Yash Desai | `yash@123` |
 
-## Assignment brief checklist
-| Brief asks for | Where it is |
+Five wrong passwords lock that ID for one minute.
+
+---
+
+## Try it (5-minute demo)
+
+Log in as **S102**, then:
+
+1. `What is my fee balance?` &rarr; fee tool is called, 40,000 outstanding
+2. `The payment portal failed. Can I pay on the next working day?` &rarr; handbook found, extension **not** confirmed, agent offers a ticket. Then say `Yes, create a ticket` &rarr; ticket ID returned
+3. `Please remember my programme is PGDM Agentic AI.` &rarr; saved. Start a new conversation and ask `What programme am I in?` &rarr; remembered
+4. `Remember my password is abc` &rarr; rejected, nothing stored
+5. `What is the hostel refund rule?` &rarr; handbook does not cover it, and the agent says so
+6. Open `/evaluator` for the trace dashboard
+
+---
+
+## Evaluation
+
+```bash
+python evaluate.py
+```
+
+- Retrieval tests always run. Agent tests T01-T13 run when `GROQ_API_KEY` is set.
+- Output goes to `reports/evaluation.md` and CSV files in `reports/`.
+
+| ID | Tests |
 |---|---|
-| Agent decides when a tool is needed and uses the result before answering | `agent.py` loop: tool results are returned to the model before the final answer |
-| At least two tools | fee status, scholarship status, create ticket, policy search, save / read memory (`tools.py`) |
-| Persistent memory; temporary/sensitive data not stored | `memory.py` (SQLite; sensitive block-list; key/value validated; tests T05, T09, T13) |
-| Retrieval from one handbook, only relevant parts | `retrieval.py` BM25 returns the top 3 sections above a score threshold, never the whole file |
-| Context selection | `context_manager.py`: rules + that student's memory + last 6 turns; everything else fetched by tools on demand |
-| Missing info / tool errors / unanswerable | controlled tool errors; "no relevant policy" result; tests T06, T07, T08, T11, T12 |
-| Trace for each run | `logs/traces.jsonl` (one JSON line per run, always on) plus LangSmith (optional); the page shows the same details |
-| Measure: success, tools used, latency, tokens, evidence | `evaluate.py` -> `reports/evaluation.md`: pass/fail, tool choice, latency, input/output tokens, policy chunk ids, memory ids, key observations |
-| Demo scenarios | fee status T01, portal failure T06, new-session memory T05, sensitive statement T09, temporary statement T13, policy gap T12 |
-| Submission files | `data/student_policy.txt`, `data/students.json`, this README, `reports/evaluation.md` |
+| T01 | Own fee status via tool |
+| T02 | Own scholarship status via tool |
+| T03 | Policy question answered from the handbook |
+| T04 | Support ticket creation |
+| T05 | Memory persists across sessions |
+| T06 | Policy gap: extension not confirmed, ticket offered |
+| T07 | Missing record handled honestly |
+| T08 | Tool error handled without inventing data |
+| T09 | Password / card number not stored |
+| T10 | Another student's record not shown |
+| T11 | Irrelevant question: no handbook answer |
+| T12 | Handbook does not cover hostel refunds |
+| T13 | Temporary statement not stored |
 
-`logs/traces.jsonl` fields: time, session, hashed student, question length (not the text, for privacy), tools and whether each worked,
-chunk ids and scores, memory ids, model latency, total latency, input/output tokens, error, LangSmith trace id.
-`reports/evaluation.md` is generated by `python evaluate.py`. The agent half says "NOT RUN" until you run it with your Groq key.
+### Results (Assignment 1 baseline)
 
-## Limits
-Password login is demo-grade (no HTTPS, no password reset), keyword (not semantic) retrieval, regex-based evaluation is approximate,
-fee/ticket data goes to LangSmith when tracing is on (fine for fictional data).
+| Measure | Result |
+|---|---|
+| Agent tests passed | **11 / 13** (T09 and T11 failed) |
+| Retrieval tests passed | **9 / 9** |
+| Average response time | about **1.96 s** |
+| Average tokens per run | about **1,294 input / 183 output** |
+
+These numbers are the baseline that Assignment 2 is compared against. LLM results vary slightly between runs.
+
+---
+
+## Tracing
+
+- **`logs/traces.jsonl`**: one line per run with time, hashed student ID, tools used and whether each worked, retrieved chunk IDs and scores, memory IDs, model latency, total latency, tokens and errors. The question text is not stored, for privacy.
+- **LangSmith**: each question appears as one `student_support_agent` run with child LLM and tool runs.
+- The chat page also shows an "Execution trace" for every answer.
+
+Tracing shows what happened. It does not prove an answer is correct; `evaluate.py` checks that separately.
+
+---
+
+## Deploy on Render (optional)
+
+- Build command: `pip install -r requirements.txt && python scripts/initialize_db.py`
+- Start command: from the `Procfile` (Gunicorn, 1 worker, 4 threads)
+- The free tier sleeps when idle. On Render the app pings its own `/health` endpoint every 12 minutes to stay awake. `/health` uses no LLM tokens.
+
+---
+
+## Limitations
+
+- Demo-grade login: no HTTPS, no password reset
+- Keyword search (BM25) rather than semantic search, so differently worded questions can miss the right section
+- Evaluation checks use patterns, so they are approximate
+- When LangSmith tracing is on, fee and ticket data is sent to LangSmith (fine for fictional data only)
+- Access control, human approval and audit logging are **not** part of this assignment; they are added in Assignment 2
+
+---
 
 ## Troubleshooting
-- `GROQ_API_KEY is missing`: check `.env` is in the project folder.
-- Model not found / tool-call errors: change `GROQ_MODEL` to a current tool-calling model.
-- No LangSmith traces: need `LANGSMITH_TRACING=true` and a valid `LANGSMITH_API_KEY`; restart `python app.py` after editing `.env`.
-- `no such table`: run `python scripts/initialize_db.py`.
+
+| Problem | Fix |
+|---|---|
+| `GROQ_API_KEY is missing` | Check that `.env` is in the project folder and restart |
+| Model not found or tool-call errors | Change `GROQ_MODEL` to a current tool-calling model |
+| No LangSmith traces | Set `LANGSMITH_TRACING=true` and a valid key, then restart |
+| `no such table` | Run `python scripts/initialize_db.py` |
+| Page looks unformatted | Hard-refresh the browser (Ctrl+F5) |
+
+---
+
+## Tech stack
+
+Python, Flask, LangChain, Groq, LangSmith, SQLite, BM25, HTML / CSS / JavaScript
